@@ -1,0 +1,16 @@
+bulld/*
+build/**
+__pycache__
+__pycache__/*
+__pycache__/**
+*/__pycache__
+**/__pycache__
+jupyter_dtools.egg-info
+jupyter_dtools.egg-info/*
+jupyter_dtools.egg-info/**
+dist
+dist/*
+dist/**
+build
+*.env
+**.env
