@@ -129,9 +129,9 @@ class Dtools(Integration):
 
 
             if myproxies is None:
-                inst['session'] = domaintools.API(inst['user'], mypass, verify_ssl=self.opts['dtools_verify_ssl'][0], rate_limit=self.opts['dtools_rate_limit'][0])
+                inst['session'] = domaintools.API(inst['user'], mypass, verify_ssl=ssl_verify, rate_limit=self.opts['dtools_rate_limit'][0])
             else:
-                inst['session'] = domaintools.API(inst['user'], mypass, proxy_url=myproxies, verify_ssl=self.opts['dtools_verify_ssl'][0], rate_limit=self.opts['dtools_rate_limit'][0])
+                inst['session'] = domaintools.API(inst['user'], mypass, proxy_url=myproxies, verify_ssl=ssl_verify, rate_limit=self.opts['dtools_rate_limit'][0])
 
             try:
                 api_calls = inst['session'].available_api_calls()
