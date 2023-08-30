@@ -113,6 +113,21 @@ class Dtools(Integration):
             if inst['enc_pass'] is not None:
                 mypass = self.ret_dec_pass(inst['enc_pass'])
                 inst['connect_pass'] = ""
+
+            ssl_verify = self.opts['dtools_verify_ssl'][0]
+            if isinstance(ssl_verify, str) and ssl_verify.strip().lower() in ['true', 'false']:
+                if ssl_verify.strip().lower() == 'true':
+                    ssl_verify = True
+                else:
+                    ssl_verify = False
+            elif isinstance(ssl_verify, int) and ssl_verify in [0, 1]:
+                if ssl_verify == 1:
+                    ssl_verify = True
+                else:
+                    ssl_verify = False
+
+
+
             if myproxies is None:
                 inst['session'] = domaintools.API(inst['user'], mypass, verify_ssl=self.opts['dtools_verify_ssl'][0], rate_limit=self.opts['dtools_rate_limit'][0])
             else:
