@@ -246,7 +246,7 @@ class Dtools(Integration):
 
 
         if ep == 'iris_enrich':
-            ep_data = ep_data.replace("'". "")
+            ep_data = ep_data.replace("'", "")
 
         try:
             if ep_api is None:
