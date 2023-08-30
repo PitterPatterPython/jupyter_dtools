@@ -245,7 +245,8 @@ class Dtools(Integration):
             return mydf, "Success - No Results"
 
 
-
+        if ep == 'iris_enrich':
+            ep_data = ep_data.replace("'". "")
 
         try:
             if ep_api is None:
