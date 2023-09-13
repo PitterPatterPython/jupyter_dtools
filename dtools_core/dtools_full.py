@@ -30,13 +30,13 @@ class Dtools(Integration):
     # The name of the integration
     name_str = "dtools"
     instances = {}
-    custom_evars = ["dtools_conn_default", "dtools_verify_ssl", "dtools_rate_limit"]
+    custom_evars = ["dtools_conn_default", "dtools_verify_ssl", "dtools_rate_limit", "dtools_max_res"]
     # These are the variables in the opts dict that allowed to be set by the user. These are specific to this custom integration and are joined
     # with the base_allowed_set_opts from the integration base
 
     # These are the variables in the opts dict that allowed to be set by the user. These are specific to this custom integration and are joined
     # with the base_allowed_set_opts from the integration base
-    custom_allowed_set_opts = ["dtools_conn_default", "dtools_verify_ssl", "dtools_rate_limit"]
+    custom_allowed_set_opts = ["dtools_conn_default", "dtools_verify_ssl", "dtools_rate_limit", "dtools_max_res"]
 
 
     help_text = ""
@@ -45,7 +45,7 @@ class Dtools(Integration):
     myopts['dtools_conn_default'] = ["default", "Default instance to connect with"]
     myopts['dtools_verify_ssl'] = [True, "Verify integrity of SSL"]
     myopts['dtools_rate_limit'] = [True, "Limit rates based on domain tools user configuration"]
-
+    myopts['dtools_max_res'] = [10000, "When doing paging, if the results reaches above this, exit from loop and show a warning"]
     apis = {
             "iris_enrich": None,
             "available_api_calls": "list",
@@ -243,6 +243,31 @@ class Dtools(Integration):
             print("\n".join(self.help_dict[help_call]['help']))
             print("")
 
+    def kargs_page(self, instance, ep, init_args):
+        full_res = []
+        if self.debug:
+            print("Initial Pull - Args:")
+            for k, v in init_args.items():
+                print(f"{k} - {v}")
+
+        this_res =  self.instances[instance]['session'].__getattribute__(ep)(**init_args)
+        full_res += [x for x in this_res]
+        next_pos = this_res.get('position', None)
+        pull_cnt = 1
+        while next_pos is not None and len(full_res) < self.opts['dtools_max_res'][0]:
+            pull_cnt += 1
+            if self.debug:
+                print(f"\t Pull {pull_cnt} for {next_pos} - Results already pulled: {len(full_res)}")
+            next_args = init_args.copy()
+            next_args['position'] = next_pos
+            next_res =  self.instances[instance]['session'].__getattribute__(ep)(**next_args)
+            next_pos = next_res.get('position', None)
+            full_res += [x for x in next_res] 
+        if len(full_res) > self.opts['dtools_max_res'][0]:
+            print(f"Warning: The returned result count {len(full_res)} exeeds the dtools_max_res of {self.opts['dtools_max_res'][0]} - This may not be a complete resultset")
+        return full_res
+
+
     def customQuery(self, query, instance, reconnect=True):
         ep, ep_data = self.parse_query(query)
         ep_api = self.apis.get(ep, None)
@@ -257,7 +282,7 @@ class Dtools(Integration):
         str_err = ""
         if ep == "help":
             self.call_help(ep_data, instance)
-            return mydf, "Success - No Results"
+            return mydf,  "Success - No Results"
 
 
         if ep == 'iris_enrich':
@@ -281,10 +306,9 @@ class Dtools(Integration):
                         these_args[l_i[0].strip()] = l_i[1].strip()
                     else:
                         print(f"No = in {l} not processing as arg")
-                if self.debug:
-                    for k, v in these_args.items():
-                        print(f"{k} - {v}")
-                myres = self.instances[instance]['session'].__getattribute__(ep)(**these_args).response().get('results', [])
+                myres = self.kargs_page(instance, ep, these_args)
+#                myres = self.instances[instance]['session'].__getattribute__(ep)(**these_args).response().get('results', [])
+
             elif ep_api.find("queryargs") == 0:
                 arg_lines = ep_data.split("\n")
                 these_args = {}
