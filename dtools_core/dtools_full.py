@@ -126,7 +126,7 @@ class Dtools(Integration):
                 else:
                     ssl_verify = False
 
-
+        
 
             if myproxies is None:
                 inst['session'] = domaintools.API(inst['user'], mypass, verify_ssl=ssl_verify, rate_limit=self.opts['dtools_rate_limit'][0])
@@ -156,6 +156,8 @@ class Dtools(Integration):
                 result = 0
             except Exception as e:
                 e_err = str(e)
+                if self.debug:
+                    print(f"Debug Error: {e_err}")
                 if e_err.find("The credentials you entered do not match an active account.") >= 0:
                     print("Bad Credentials, please try again")
                     result = -1
