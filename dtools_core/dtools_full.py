@@ -104,7 +104,7 @@ class Dtools(Integration):
         if inst is not None:
 
             if inst['options'].get('useproxy', 0) == 1:
-                myproxies = self.get_proxy_str(instance)
+                myproxies = self.retProxy(instance)
             else:
                 myproxies = None
 
